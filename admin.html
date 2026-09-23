@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CHINA DIRECT — Admin</title>
+<style>
+:root{--bg:#f4f1eb;--card:#fff;--text:#222;--muted:#777;--line:#e4ddd3;--accent:#b88a59;--dark:#252525}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:1180px;margin:auto;padding:22px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.brand{font-family:Georgia,serif;letter-spacing:2px;font-size:27px}
+.sub{font-family:Arial,sans-serif;letter-spacing:0;font-size:12px;color:#777}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
+.login{max-width:430px;margin:70px auto}
+.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+input,select,button{font:inherit}
+input,select{padding:12px;border:1px solid #d8d1c7;border-radius:12px;background:#fff}
+button{border:0;border-radius:12px;padding:11px 15px;cursor:pointer}
+.primary{background:var(--dark);color:#fff;width:100%}
+.ghost{background:#eee;color:#222}
+.badge{font-size:12px;padding:7px 10px;border-radius:999px;background:#eee}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.toolbar input,.toolbar select{min-width:210px}
+.orders{display:grid;gap:12px}
+.order{display:grid;grid-template-columns:1.1fr 1.1fr .9fr .7fr auto;gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:14px}
+.small{font-size:12px;color:var(--muted)}
+.title{font-weight:700}
+.money{font-weight:700}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.status{padding:9px;border-radius:10px}
+.items{grid-column:1/-1;background:#faf8f5;border-radius:12px;padding:10px;display:none}
+.order.open .items{display:block}
+.itemrow{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid #ece7e0}
+.itemrow:last-child{border-bottom:0}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+.msg{margin-top:10px;font-size:13px}
+.err{color:#b42318}
+.ok{color:#157347}
+@media(max-width:850px){
+  .order{grid-template-columns:1fr 1fr}
+  .actions{grid-column:1/-1}
+  .money{justify-self:end}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">CHINA DIRECT <span class="sub">ADMIN</span></div>
+    <div id="userBox"></div>
+  </div>
+
+  <section id="loginView" class="card login">
+    <h2 style="margin-top:0">Вход администратора</h2>
+    <div class="field">
+      <label>Email</label>
+      <input id="email" type="email" autocomplete="username" placeholder="admin@email.com">
+    </div>
+    <div class="field">
+      <label>Пароль</label>
+      <input id="password" type="password" autocomplete="current-password">
+    </div>
+    <button class="primary" onclick="login()">Войти</button>
+    <div id="loginMsg" class="msg"></div>
+  </section>
+
+  <section id="adminView" style="display:none">
+    <div class="toolbar">
+      <input id="search" placeholder="Поиск: заказ, имя, телефон..." oninput="render()">
+      <select id="filterStatus" onchange="render()">
+        <option value="">Все статусы</option>
+        <option value="new">new</option>
+        <option value="confirmed">confirmed</option>
+        <option value="paid">paid</option>
+        <option value="purchased">purchased</option>
+        <option value="shipped">shipped</option>
+        <option value="delivered">delivered</option>
+      </select>
+      <button class="ghost" onclick="loadOrders()">Обновить</button>
+    </div>
+    <div class="card">
+      <div id="orders" class="orders"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const SUPABASE_URL="https://euuqxtpumhecvbsainms.supabase.co";
+const SUPABASE_KEY="sb_publishable_ilqXAt3lZkQ3wOHXr2LKGA_4sRHer9u";
+const statuses=["new","confirmed","paid","purchased","shipped","delivered"];
+let session=JSON.parse(localStorage.getItem("cd_admin_session")||"null");
+let ordersData=[];
+
+function esc(s){
+  return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
+}
+function money(n){return new Intl.NumberFormat("ru-RU").format(Number(n||0))+" ֏"}
+
+async function login(){
+  loginMsg.textContent="Входим...";
+  loginMsg.className="msg";
+  const res=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{
+    method:"POST",
+    headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({email:email.value.trim(),password:password.value})
+  });
+  const data=await res.json();
+  if(!res.ok){
+    loginMsg.textContent=data.error_description||data.msg||"Ошибка входа";
+    loginMsg.className="msg err";
+    return;
+  }
+  session=data;
+  localStorage.setItem("cd_admin_session",JSON.stringify(session));
+  showAdmin();
+}
+
+function logout(){
+  localStorage.removeItem("cd_admin_session");
+  session=null;
+  location.reload();
+}
+
+async function authFetch(path,opts={}){
+  if(!session?.access_token) throw new Error("Нет сессии");
+  const headers={...(opts.headers||{}),"apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token};
+  let r=await fetch(SUPABASE_URL+path,{...opts,headers});
+  if(r.status===401 && session.refresh_token){
+    const rr=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({refresh_token:session.refresh_token})
+    });
+    if(rr.ok){
+      session=await rr.json();
+      localStorage.setItem("cd_admin_session",JSON.stringify(session));
+      headers.Authorization="Bearer "+session.access_token;
+      r=await fetch(SUPABASE_URL+path,{...opts,headers});
+    }
+  }
+  return r;
+}
+
+async function loadOrders(){
+  orders.innerHTML='<div class="empty">Загрузка...</div>';
+  try{
+    const r=await authFetch("/rest/v1/orders?select=*&order=created_at.desc");
+    if(!r.ok) throw new Error(await r.text());
+    ordersData=await r.json();
+    render();
+  }catch(e){
+    console.error(e);
+    orders.innerHTML='<div class="empty err">Не удалось загрузить заказы.<br>Проверьте RLS-политики администратора.</div>';
+  }
+}
+
+function render(){
+  const q=(search?.value||"").toLowerCase();
+  const fs=filterStatus?.value||"";
+  const rows=ordersData.filter(o=>{
+    const blob=[o.order_number,o.order_name,o.phone,o.country,o.city,o.address].join(" ").toLowerCase();
+    return (!q||blob.includes(q))&&(!fs||o.status===fs);
+  });
+  if(!rows.length){
+    orders.innerHTML='<div class="empty">Заказов не найдено</div>';
+    return;
+  }
+  orders.innerHTML=rows.map(o=>{
+    const items=Array.isArray(o.items)?o.items:[];
+    return `<div class="order" id="o${o.id}">
+      <div><div class="title">${esc(o.order_number)}</div><div class="small">${esc(new Date(o.created_at).toLocaleString("ru-RU"))}</div></div>
+      <div><div>${esc(o.order_name)}</div><div class="small">${esc(o.phone)}</div></div>
+      <div><div>${esc(o.city||o.country||"")}</div><div class="small">${esc(o.address||"")}</div></div>
+      <div class="money">${money(o.total)}</div>
+      <div class="actions">
+        <select class="status" onchange="setStatus(${o.id},this.value)">
+          ${statuses.map(s=>`<option ${s===o.status?"selected":""}>${s}</option>`).join("")}
+        </select>
+        <button class="ghost" onclick="toggle(${o.id})">Товары</button>
+      </div>
+      <div class="items">
+        ${items.length?items.map(i=>`<div class="itemrow"><span>${esc(i.name||i.title||i.sku||"Товар")} × ${esc(i.qty||1)}</span><span>${money((i.price||0)*(i.qty||1))}</span></div>`).join(""):'<div class="small">Нет данных о товарах</div>'}
+        ${o.comment?`<div class="small" style="margin-top:8px">Комментарий: ${esc(o.comment)}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggle(id){document.getElementById("o"+id)?.classList.toggle("open")}
+
+async function setStatus(id,status){
+  const r=await authFetch("/rest/v1/orders?id=eq."+id,{
+    method:"PATCH",
+    headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+    body:JSON.stringify({status})
+  });
+  if(!r.ok){
+    alert("Не удалось изменить статус");
+    await loadOrders();
+    return;
+  }
+  const o=ordersData.find(x=>x.id===id);
+  if(o)o.status=status;
+}
+
+function showAdmin(){
+  loginView.style.display="none";
+  adminView.style.display="block";
+  userBox.innerHTML='<span class="badge">'+esc(session?.user?.email||"admin")+'</span> <button class="ghost" onclick="logout()">Выйти</button>';
+  loadOrders();
+}
+
+if(session?.access_token) showAdmin();
+</script>
+</body>
+</html>

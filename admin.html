@@ -215,7 +215,7 @@ async function uploadProductImage(){
     p_file.value="";
   }catch(e){
     console.error(e);
-    uploadMsg.textContent="Ошибка загрузки фото";
+    uploadMsg.textContent="Ошибка: "+(e?.message||String(e));
     uploadMsg.className="small err";
   }
 }

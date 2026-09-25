@@ -1,0 +1,110 @@
+(function(){
+  function parseImages(v){
+    if(!v) return [];
+    if(Array.isArray(v)) return v.filter(Boolean).slice(0,10);
+    const s=String(v).trim();
+    if(!s) return [];
+    if(s[0]==='['){
+      try{
+        const a=JSON.parse(s);
+        if(Array.isArray(a)) return a.filter(Boolean).slice(0,10);
+      }catch(e){}
+    }
+    return [s];
+  }
+
+  function normalizeImageElement(img){
+    const raw=img.getAttribute('src')||'';
+    const images=parseImages(raw);
+    if(images.length>1 || (raw.trim().startsWith('[') && images.length)){
+      img.dataset.galleryImages=JSON.stringify(images);
+      img.src=images[0]||'';
+      img.style.cursor='pointer';
+      img.addEventListener('click',function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        openGallery(images,0);
+      },{once:false});
+    }
+  }
+
+  function scan(root=document){
+    root.querySelectorAll('img').forEach(normalizeImageElement);
+  }
+
+  function openGallery(images,startIndex){
+    if(!images || !images.length) return;
+    let index=startIndex||0;
+
+    const overlay=document.createElement('div');
+    overlay.id='simaneliGalleryOverlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;padding:18px;';
+
+    const close=document.createElement('button');
+    close.textContent='×';
+    close.setAttribute('aria-label','Закрыть');
+    close.style.cssText='position:absolute;right:18px;top:18px;width:44px;height:44px;border:0;border-radius:50%;font-size:32px;line-height:1;background:#fff;color:#111;z-index:3;';
+    close.onclick=()=>overlay.remove();
+
+    const img=document.createElement('img');
+    img.style.cssText='max-width:100%;max-height:78vh;object-fit:contain;border-radius:12px;';
+
+    const counter=document.createElement('div');
+    counter.style.cssText='position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.12);color:#fff;padding:7px 12px;border-radius:999px;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;';
+
+    const prev=document.createElement('button');
+    prev.textContent='‹';
+    prev.style.cssText='position:absolute;left:12px;top:50%;transform:translateY(-50%);width:46px;height:58px;border:0;border-radius:12px;font-size:42px;background:rgba(255,255,255,.15);color:#fff;';
+    const next=document.createElement('button');
+    next.textContent='›';
+    next.style.cssText='position:absolute;right:12px;top:50%;transform:translateY(-50%);width:46px;height:58px;border:0;border-radius:12px;font-size:42px;background:rgba(255,255,255,.15);color:#fff;';
+
+    function render(){
+      img.src=images[index];
+      counter.textContent=(index+1)+' / '+images.length;
+      prev.style.display=images.length>1?'block':'none';
+      next.style.display=images.length>1?'block':'none';
+    }
+    prev.onclick=(e)=>{e.stopPropagation();index=(index-1+images.length)%images.length;render();};
+    next.onclick=(e)=>{e.stopPropagation();index=(index+1)%images.length;render();};
+    overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
+
+    let x0=null;
+    overlay.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
+    overlay.addEventListener('touchend',e=>{
+      if(x0===null)return;
+      const dx=e.changedTouches[0].clientX-x0;
+      if(Math.abs(dx)>40){
+        index=dx<0?(index+1)%images.length:(index-1+images.length)%images.length;
+        render();
+      }
+      x0=null;
+    },{passive:true});
+
+    overlay.append(close,img,prev,next,counter);
+    document.body.appendChild(overlay);
+    render();
+  }
+
+  const observer=new MutationObserver(mutations=>{
+    for(const m of mutations){
+      for(const node of m.addedNodes){
+        if(node.nodeType===1){
+          if(node.tagName==='IMG') normalizeImageElement(node);
+          scan(node);
+        }
+      }
+      if(m.type==='attributes' && m.target && m.target.tagName==='IMG'){
+        normalizeImageElement(m.target);
+      }
+    }
+  });
+
+  function start(){
+    scan();
+    observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['src']});
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start);
+  else start();
+})();

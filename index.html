@@ -205,7 +205,14 @@ function openProduct(sku){
   current=products.find(p=>p.sku===sku);
   selectedSize=current.sizes[0]||null;
   selectedColor=current.colors[0]||null;
-  detailImg.src=current.img; detailSku.textContent=current.sku; detailName.textContent=current.name;
+  detailImg.src=(()=>{
+  try{
+    const a=JSON.parse(current.img);
+    return Array.isArray(a) ? a[0] : current.img;
+  }catch(e){
+    return current.img;
+  }
+})(); detailSku.textContent=current.sku; detailName.textContent=current.name;
   detailPrice.textContent=money(current.price); detailMoq.textContent='MOQ: '+current.moq;
   renderVariantChips();
   productModal.style.display='block';

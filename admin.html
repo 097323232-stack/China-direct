@@ -177,8 +177,18 @@ function renderOrders(){
   <div><div>${esc(o.order_name)}</div><div class="small">${esc(o.phone)}</div></div>
   <div>${esc(o.city||o.country||"")}</div><div class="money">${money(o.total)}</div>
   <div class="actions"><select onchange="setStatus(${o.id},this.value)">${statuses.map(s=>`<option ${s===o.status?"selected":""}>${s}</option>`).join("")}</select><button class="ghost" onclick="document.getElementById('o${o.id}').classList.toggle('open')">Товары</button></div>
-  <div class="items">${items.length?items.map(i=>`<div class="itemrow"><span>${esc(i.name||i.title||i.sku||"Товар")} × ${esc(i.qty||1)}</span><span>${money((i.price||0)*(i.qty||1))}</span></div>`).join(""):"Нет данных"}</div>
-  </div>`}).join("");
+  <div class="items">${items.length?items.map(i=>`
+  <div class="itemrow">
+    <span>
+      <b>${esc(i.name||i.title||"Товар")}</b><br>
+      SKU: ${esc(i.sku||"-")}<br>
+      Размер: ${esc(i.size||i.selectedSize||"-")}<br>
+      Цвет: ${esc(i.color||i.selectedColor||"-")}<br>
+      Количество: ${esc(i.qty||1)}
+    </span>
+    <span>${money((i.price||0)*(i.qty||1))}</span>
+  </div>
+`).join(""):"Нет данных"}</div>`}).join("");
 }
 async function setStatus(id,status){const r=await authFetch("/rest/v1/orders?id=eq."+id,{method:"PATCH",headers:{"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({status})});if(!r.ok)alert("Не удалось изменить статус");}
 

@@ -166,6 +166,7 @@ async function loadProductsFromSupabase(){
       sku:p.sku,
       name:p.name,
       price:Number(p.sale_price||0),
+      discount:Number(p.discount_percent||0),
       sizes:Array.isArray(p.sizes)?p.sizes:[],
       colors:Array.isArray(p.colors)?p.colors:[],
       moq:String(p.moq ?? 1),
@@ -195,7 +196,13 @@ function renderProducts(){
       <div class="sku">${p.sku}</div>
       <div class="name">${p.name}</div>
       <div class="meta">Размеры: ${p.sizes.join(' / ')}<br>MOQ: ${p.moq}</div>
-      <div class="price">${money(p.price)}</div>
+      
+${p.discount>0
+? `<div style="font-size:14px;color:#888;text-decoration:line-through">${money(p.price)}</div>
+   <div style="font-size:14px;font-weight:700;color:#b42318">-${p.discount}%</div>
+   <div class="price">${money(Math.round(p.price*(1-p.discount/100)))}</div>`
+: `<div class="price">${money(p.price)}</div>`
+}
     </div>
   </div>`).join('');
   updateCount();

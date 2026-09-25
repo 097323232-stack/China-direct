@@ -133,7 +133,7 @@ header{background:#222;color:white;padding:24px 18px 20px;position:sticky;top:0;
 </div>
 <div class="field">
   <label>Срок заказа</label>
-  <select id="orderTerm">
+  <select id="orderTerm" onchange="updateOrderTerm()">
     <option value="stock">В наличии</option>
     <option value="urgent">Срочный заказ</option>
     <option value="10days">Предзаказ — 10 дней</option>
@@ -272,8 +272,18 @@ function renderCart(){
 }
 function changeQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveCart();renderCart()}
 function removeItem(i){cart.splice(i,1);saveCart();renderCart()}
-function updatePaymentInfo(){
-  const v=paymentMethod.value;
+ function updateOrderTerm(){
+  const cashOption = paymentMethod.querySelector('option[value="cash"]');
+  const isStock = orderTerm.value === "stock";
+ 
+  cashOption.hidden = !isStock;
+ 
+  if(!isStock && paymentMethod.value === "cash"){
+    paymentMethod.value = "bank";
+    updatePaymentInfo();
+  }
+}
+ function updatePaymentInfo(){ const v=paymentMethod.value;
  
   if(v==="bank"){
     paymentInfo.innerHTML="Банковский перевод — реквизиты будут показаны после подтверждения заказа.";
@@ -286,6 +296,7 @@ function updatePaymentInfo(){
   }
 }
 updatePaymentInfo();
+updateOrderTerm();
 async function checkout(){
   if(!cart.length) return alert('Корзина пустая');
   const name=customerName.value.trim(), ph=phone.value.trim();

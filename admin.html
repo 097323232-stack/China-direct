@@ -45,7 +45,8 @@ textarea{min-height:90px;resize:vertical}button{border:0;border-radius:12px;padd
 
   <section id="loginView" class="card login">
     <h2 style="margin-top:0">Вход администратора</h2>
-    <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
+    
+<div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
     <div class="field"><label>Пароль</label><input id="password" type="password" autocomplete="current-password"></div>
     <button class="primary" style="width:100%" onclick="login()">Войти</button>
     <div id="loginMsg" class="small" style="margin-top:10px"></div>
@@ -93,7 +94,8 @@ textarea{min-height:90px;resize:vertical}button{border:0;border-radius:12px;padd
       <div class="field"><label>Категория</label><input id="p_category"></div>
       <div class="field"><label>Валюта</label><select id="p_currency"><option>AMD</option><option>USD</option><option>CNY</option><option>GEL</option></select></div>
       <div class="field"><label>Цена продажи</label><input id="p_sale" type="number" step="0.01"></div>
-      <div class="field"><label>Закупочная цена</label><input id="p_purchase" type="number" step="0.01"></div>
+      <div class="field"><label>Скидка %</label><input id="p_discount" type="number" min="0" max="100" value="0"></div
+<div class="field"><label>Закупочная цена</label><input id="p_purchase" type="number" step="0.01"></div>
       <div class="field"><label>Размеры через запятую</label><input id="p_sizes" placeholder="M, L, XL"></div>
       <div class="field"><label>Цвета через запятую</label><input id="p_colors" placeholder="Black, Beige"></div>
       <div class="field"><label>MOQ</label><input id="p_moq" type="number" value="1"></div>
@@ -202,7 +204,9 @@ function openProduct(id=null){
   productMsg.textContent="";if(window.uploadMsg){uploadMsg.textContent=""}if(window.p_file){p_file.value=""};
   const p=id?productsData.find(x=>x.id===id):null;
   p_id.value=p?.id||"";p_sku.value=p?.sku||"";p_name.value=p?.name||"";p_category.value=p?.category||"";p_currency.value=p?.currency||"AMD";
-  p_sale.value=p?.sale_price??"";p_purchase.value=p?.purchase_price??"";p_sizes.value=(p?.sizes||[]).join(", ");p_colors.value=(p?.colors||[]).join(", ");
+ ; p_sale.value=p?.sale_price??"";
+p_discount.value=p?.discount_percent??0;
+p_purchase.value=p?.purchase_price??"";p_sizes.value=(p?.sizes||[]).join(", ");p_colors.value=(p?.colors||[]).join(", ");
   p_moq.value=p?.moq??1;p_stock.value=p?.stock??"";productImages=parseImages(p?.image_url);p_description.value=p?.description||"";p_active.checked=p?.active??true;renderPhotoGrid();
   productModalTitle.textContent=p?"Редактировать товар":"Добавить товар";productModal.classList.add("show");
 }
@@ -239,7 +243,7 @@ async function uploadProductImages(){
 }
 
 async function saveProduct(){
-  const payload={sku:p_sku.value.trim(),name:p_name.value.trim(),category:p_category.value.trim(),currency:p_currency.value,sale_price:Number(p_sale.value||0),purchase_price:Number(p_purchase.value||0),sizes:arr(p_sizes.value),colors:arr(p_colors.value),moq:Number(p_moq.value||1),stock:p_stock.value===""?null:Number(p_stock.value),image_url:productImages.length?JSON.stringify(productImages):null,description:p_description.value.trim(),active:p_active.checked,updated_at:new Date().toISOString()};
+  const payload={sku:p_sku.value.trim(),name:p_name.value.trim(),category:p_category.value.trim(),currency:p_currency.value,sale_price:Number(p_sale.value||0),discount_percent:Number(p_discount.value||0), purchase_price:Number(p_purchase.value||0),sizes:arr(p_sizes.value),colors:arr(p_colors.value),moq:Number(p_moq.value||1),stock:p_stock.value===""?null:Number(p_stock.value),image_url:productImages.length?JSON.stringify(productImages):null,description:p_description.value.trim(),active:p_active.checked,updated_at:new Date().toISOString()};
   if(!payload.sku||!payload.name){productMsg.textContent="Нужны SKU и название";productMsg.className="small err";return}
   const id=p_id.value;
   const path=id?"/rest/v1/products?id=eq."+id:"/rest/v1/products";

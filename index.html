@@ -272,4 +272,10 @@ function closeModal(id){document.getElementById(id).style.display='none'}
 window.onclick=e=>{if(e.target.classList.contains('modal'))e.target.style.display='none'}
 loadProductsFromSupabase();
 </script>
-</body></html>
+<script src="gallery-fix.js"></script>
+</body></html>create policy "Admin upload products"
+on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'products');
+ 

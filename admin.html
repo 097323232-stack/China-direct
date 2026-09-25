@@ -180,7 +180,8 @@ function renderOrders(){
   <div class="small">
     Оплата: ${
       o.payment_method==="alipay" ? "Alipay" :
-      o.payment_method==="cash" ? "Оплата при получении" :
+      o.payment_method==="usdt" ? "USDT TRC20" :
+o.payment_method==="cash" ? "Оплата при получении" :
 o.payment_method==="bank" ? "Банковский перевод" :
 "Не указано"
     }

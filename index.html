@@ -127,8 +127,20 @@ header{background:#222;color:white;padding:24px 18px 20px;position:sticky;top:0;
   <select id="paymentMethod" onchange="updatePaymentInfo()">
     <option value="bank">Банковский перевод</option>
     <option value="alipay">Alipay</option>
-    <option value="cash">Оплата при получении</option>
+    <option value="usdt">USDT TRC20</option>
+<option value="cash">Оплата при получении</option>
   </select><div id="paymentInfo" style="margin-top:10px;font-size:14px;line-height:1.5"></div>
+</div>
+<div class="field">
+  <label>Срок заказа</label>
+  <select id="orderTerm">
+    <option value="stock">В наличии</option>
+    <option value="urgent">Срочный заказ</option>
+    <option value="10days">Предзаказ — 10 дней</option>
+    <option value="15days">Предзаказ — 15 дней</option>
+    <option value="20days">Предзаказ — 20 дней</option>
+    <option value="custom">Под заказ — уточнить срок</option>
+  </select>
 </div>
         <select id="country"><option>Армения</option><option>Грузия</option><option>Россия</option><option>Другая страна</option></select>
         <input id="city" placeholder="Город">
@@ -267,7 +279,9 @@ function updatePaymentInfo(){
     paymentInfo.innerHTML="Банковский перевод — реквизиты будут показаны после подтверждения заказа.";
   }else if(v==="alipay"){
     paymentInfo.innerHTML="Alipay — QR-код или Alipay ID будет показан после подтверждения заказа.";
-  }else{
+}else if(v==="usdt"){
+  paymentInfo.innerHTML="USDT TRC20 — адрес кошелька будет показан после подтверждения заказа.";  
+}else{
     paymentInfo.innerHTML="Оплата при получении.";
   }
 }
@@ -290,6 +304,7 @@ async function checkout(){
     order_name:order.customer,
     phone:order.phone,
     payment_method:paymentMethod.value,
+    order_term:orderTerm.value,
     country:order.country,
     city:order.city,
     address:order.address,

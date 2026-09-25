@@ -220,7 +220,11 @@ function openProduct(sku){
     return current.img;
   }
 })(); detailSku.textContent=current.sku; detailName.textContent=current.name;
-  detailPrice.textContent=money(current.price); detailMoq.textContent='MOQ: '+current.moq;
+  detailPrice.innerHTML=current.discount>0
+? `<span style="font-size:16px;color:#888;text-decoration:line-through">${money(current.price)}</span>
+   <span style="display:block;font-size:16px;font-weight:700;color:#b42318">-${current.discount}%</span>
+   <span style="display:block;font-size:24px;font-weight:800">${money(Math.round(current.price*(1-current.discount/100)))}</span>`
+: money(current.price); detailMoq.textContent='MOQ: '+current.moq;
   renderVariantChips();
   productModal.style.display='block';
 }

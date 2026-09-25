@@ -175,7 +175,18 @@ function renderOrders(){
   orders.innerHTML=rows.map(o=>{const items=Array.isArray(o.items)?o.items:[];return `<div class="order" id="o${o.id}">
   <div><div class="title">${esc(o.order_number)}</div><div class="small">${esc(new Date(o.created_at).toLocaleString("ru-RU"))}</div></div>
   <div><div>${esc(o.order_name)}</div><div class="small">${esc(o.phone)}</div></div>
-  <div>${esc(o.city||o.country||"")}</div><div class="money">${money(o.total)}</div>
+ <div>
+  <div>${esc(o.city||o.country||"")}</div>
+  <div class="small">
+    Оплата: ${
+      o.payment_method==="alipay" ? "Alipay" :
+      o.payment_method==="cash" ? "Оплата при получении" :
+o.payment_method==="bank" ? "Банковский перевод" :
+"Не указано"
+    }
+  </div>
+</div>
+<div class="money">${money(o.total)}</div>
   <div class="actions"><select onchange="setStatus(${o.id},this.value)">${statuses.map(s=>`<option ${s===o.status?"selected":""}>${s}</option>`).join("")}</select><button class="ghost" onclick="document.getElementById('o${o.id}').classList.toggle('open')">Товары</button></div>
   <div class="items">${items.length?items.map(i=>`
   <div class="itemrow">

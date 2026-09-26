@@ -697,6 +697,26 @@ a[href*="instagram.com"]:not([style]) {
   height: 32px !important;
   font-size: 18px !important;
 }
+/* Сильно уменьшаем верхнюю белую шапку */
+.modal-content > div:first-child {
+  padding: 4px 10px !important;
+  min-height: 28px !important;
+  height: auto !important;
+}
+ 
+/* Любой текст внутри верхней шапки */
+.modal-content > div:first-child * {
+  font-size: 11px !important;
+  line-height: 1 !important;
+}
+ 
+/* Кнопка X */
+.modal-content > div:first-child button {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+}
 </style>
 </body></html>
  

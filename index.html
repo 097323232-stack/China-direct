@@ -97,7 +97,7 @@ header{background:#222;color:white;padding:24px 18px 20px;position:sticky;top:0;
 <div id="productModal" class="modal">
   <div class="sheet">
     <div class="sheet-head"><b>Товар</b><button class="close" onclick="closeModal('productModal')">×</button></div>
-    <img id="detailImg" class="detail-img">
+    <img id="detailImg" class="detail-img" onclick="openFullscreenProductImage()" alt="Фото товара">
     <div class="section">
       <div id="detailSku" class="sku"></div>
       <h2 id="detailName"></h2>
@@ -111,6 +111,11 @@ header{background:#222;color:white;padding:24px 18px 20px;position:sticky;top:0;
       <button class="btn full" onclick="addSelectedToCart()">Добавить в корзину</button>
     </div>
   </div>
+</div>
+
+<div id="productImageViewer" class="product-image-viewer" role="dialog" aria-modal="true" aria-label="Фото товара" onclick="if(event.target===this)closeFullscreenProductImage()" hidden>
+  <button type="button" class="product-image-close" aria-label="Закрыть фото" onclick="closeFullscreenProductImage()">×</button>
+  <img id="productImageFull" alt="Фото товара">
 </div>
 
 <div id="cartModal" class="modal">
@@ -381,6 +386,14 @@ function openOrders(){
   <div style="margin-top:8px">${o.items.map(i=>`${i.name} — ${i.size}, ${i.color} × ${i.qty}`).join('<br>')}</div></div>
   `).join(''):'Заказов пока нет';
 }
+function openFullscreenProductImage(){
+  if(!detailImg.src) return;
+  productImageFull.src=detailImg.src;
+  productImageFull.alt=detailName.textContent||'Фото товара';
+  productImageViewer.hidden=false;
+}
+function closeFullscreenProductImage(){productImageViewer.hidden=true;}
+document.addEventListener('keydown', e=>{if(e.key==='Escape'&&!productImageViewer.hidden)closeFullscreenProductImage();});
 function closeModal(id){document.getElementById(id).style.display='none'}
 window.onclick=e=>{if(e.target.classList.contains('modal'))e.target.style.display='none'}
 loadProductsFromSupabase();
@@ -865,6 +878,60 @@ body > .contact-buttons.contact-actions > a.contact-action > span {
   border: 0 !important;
   box-shadow: none !important;
 }
+</style>
+<style>
+/* Full screen product photo and the existing gallery viewer. */
+#productModal #detailImg {cursor: zoom-in}
+#productImageViewer.product-image-viewer[hidden] {display: none !important}
+#productImageViewer.product-image-viewer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: rgba(0,0,0,.96) !important;
+}
+#productImageViewer > img,
+#simaneliGalleryOverlay > img {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 96vw !important;
+  max-height: 92vh !important;
+  max-height: 92dvh !important;
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+#productImageViewer > .product-image-close {
+  position: absolute !important;
+  top: max(10px, env(safe-area-inset-top)) !important;
+  right: max(10px, env(safe-area-inset-right)) !important;
+  z-index: 2 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: rgba(255,255,255,.2) !important;
+  color: #fff !important;
+  font-size: 29px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+}
+#simaneliGalleryOverlay {padding: 0 !important}
 </style>
 </body></html>
  

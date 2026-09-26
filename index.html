@@ -717,6 +717,32 @@ a[href*="instagram.com"]:not([style]) {
   min-width: 28px !important;
   min-height: 28px !important;
 }
+ 
+/* Фото товара показываем целиком */
+.modal-content img {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 72vh !important;
+  object-fit: contain !important;
+}
+ 
+/* Заголовок "Товар" делаем маленьким */
+.modal-content h2,
+.modal-content h3,
+.modal-content .product-title {
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  margin: 3px 0 !important;
+}
+ 
+/* Уменьшаем лишние отступы внутри карточки */
+.modal-content {
+  padding-top: 4px !important;
+}
+ 
+.modal-content p {
+  margin: 4px 0 !important;
+}
 </style>
 </body></html>
  

@@ -173,6 +173,16 @@ let orders = JSON.parse(localStorage.getItem('cd_orders_v3') || '[]');
 let current = null, selectedSize = null, selectedColor = null;
 
 const money = n => Number(n).toLocaleString('ru-RU') + ' ֏';
+const finalPrice = p => p.discount>0 ? Math.round(p.price*(1-p.discount/100)) : p.price;
+function syncCartPrices(){
+  let changed=false;
+  cart.forEach(item=>{
+    const product=products.find(p=>p.sku===item.sku);
+    if(product && item.price!==finalPrice(product)){item.price=finalPrice(product);changed=true;}
+  });
+  if(changed){saveCart();if(cartModal.style.display==='block')renderCart();}
+}
+
 
 async function loadProductsFromSupabase(){
   const grid=document.getElementById('grid');
@@ -196,10 +206,12 @@ async function loadProductsFromSupabase(){
       category:p.category||'',
       currency:p.currency||'AMD'
     }));
+    syncCartPrices();
     renderProducts();
   }catch(e){
     console.error('Products load error',e);
     products=FALLBACK_PRODUCTS;
+    syncCartPrices();
     renderProducts();
     const note=document.createElement('div');
     note.style.cssText='max-width:1100px;margin:10px auto;padding:10px 16px;color:#8a5b00;background:#fff4d6;border-radius:12px';
@@ -264,8 +276,8 @@ function renderVariantChips(){
 function addSelectedToCart(){
   let key=current.sku+'|'+selectedSize+'|'+selectedColor;
   let found=cart.find(x=>x.key===key);
-  if(found) found.qty++;
-  else cart.push({key,sku:current.sku,name:current.name,price:current.price,size:selectedSize,color:selectedColor,qty:1});
+  if(found){found.qty++;found.price=finalPrice(current);}
+  else cart.push({key,sku:current.sku,name:current.name,price:finalPrice(current),size:selectedSize,color:selectedColor,qty:1});
   saveCart(); closeModal('productModal'); openCart();
 }
 function saveCart(){localStorage.setItem('cd_cart_v3',JSON.stringify(cart));updateCount()}

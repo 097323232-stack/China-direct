@@ -78,7 +78,7 @@ header{background:#222;color:white;padding:24px 18px 20px;position:sticky;top:0;
 </style>
 </head>
 <body>
-<header><div class="wrap"><div class="brand">Simaneli</div><div class="sub">Global wholesale marketplace</div></div></header>
+<header><div class="wrap"><div class="brand-line"><div class="brand">Simaneli</div><div class="brand-flags" aria-label="Китай, Армения, Грузия, Иран, ОАЭ, Россия, США, Южная Корея, Турция, Италия"><span title="Китай">🇨🇳</span><span title="Армения">🇦🇲</span><span title="Грузия">🇬🇪</span><span title="Иран">🇮🇷</span><span title="ОАЭ">🇦🇪</span><span title="Россия">🇷🇺</span><span title="США">🇺🇸</span><span title="Южная Корея">🇰🇷</span><span title="Турция">🇹🇷</span><span title="Италия">🇮🇹</span></div></div><div class="sub">Global wholesale marketplace</div></div></header>
 
 <div class="hero wrap">
   <h1>Каталог</h1>
@@ -1027,6 +1027,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElemen
 .category-filters{display:flex;gap:7px;overflow-x:auto;margin:10px 0 0;padding:1px 0 5px;scrollbar-width:thin}
 .category-filter{flex:none;border:1px solid #ded5ca;border-radius:999px;background:#fff;color:#3a332c;padding:8px 11px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer}
 .category-filter.active{background:#222;color:#fff;border-color:#222}
+</style>
+<style>
+header .brand-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header .brand-flags{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:17px;line-height:1}
+header .brand-flags span{display:inline-block}
+@media(max-width:650px){header .brand-line{gap:6px 10px}header .brand{font-size:24px;letter-spacing:2px}header .brand-flags{gap:3px;font-size:16px}}
 </style>
 </body></html>
  

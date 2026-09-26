@@ -416,13 +416,31 @@ loadProductsFromSupabase();
 }
 </style>
 <div class="contact-buttons">
-  <a href="https://wa.me/37433200019" target="_blank">WhatsApp</a>
- 
-  <a href="tel:+37433200019">Позвонить</a>
- 
-  <a href="https://instagram.com/" target="_blank">Instagram</a>
+  <a class="whatsapp" href="https://wa.me/37433200019" target="_blank">WhatsApp</a>
+<a class="call" href="tel:+37433200019">Позвонить</a>
+<a class="instagram" href="https://instagram.com/" target="_blank">Instagram</a>
 </div>
+ <style>
+.contact-buttons a {
+  text-decoration: none;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+}
  
+.contact-buttons .whatsapp {
+  background: #25D366;
+}
+ 
+.contact-buttons .call {
+  background: #111;
+}
+ 
+.contact-buttons .instagram {
+  background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
+}
+</style>
 <style>
 .contact-buttons{
   position: fixed;

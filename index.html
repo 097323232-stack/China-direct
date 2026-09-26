@@ -179,7 +179,7 @@ let cart = JSON.parse(localStorage.getItem('cd_cart_v3') || '[]');
 let orders = JSON.parse(localStorage.getItem('cd_orders_v3') || '[]');
 let current = null, selectedSize = null, selectedColor = null;
 let selectedCategory = '';
-const catalogCategories = ['Мужские кроссовки','Мужские спортивные костюмы','Мужские джинсовые брюки','Женские платья','Женские кофты','Женские спортивные костюмы','Женские джинсовые брюки','HandMade'];
+const catalogCategories = ['Мужские кроссовки','Мужские спортивные костюмы','Мужские джинсовые брюки','Женские платья','Женские кофты','Женские спортивные костюмы','Женские джинсовые брюки','HandMade','Продукты питания','Автозапчасти','Парфюмерия','Хозяйственные товары','Аксессуары','Сумки','Очки'];
 
 const money = n => Number(n).toLocaleString('ru-RU') + ' ֏';
 const finalPrice = p => p.discount>0 ? Math.round(p.price*(1-p.discount/100)) : p.price;

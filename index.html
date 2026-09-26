@@ -102,6 +102,7 @@ header{background:#222;color:white;padding:24px 18px 20px;position:sticky;top:0;
       <div id="detailSku" class="sku"></div>
       <h2 id="detailName"></h2>
       <div id="detailPrice" class="price"></div>
+      <div id="detailDescription" class="product-description" hidden></div>
       <div class="small" style="margin-top:12px">Размер</div>
       <div id="sizeChips" class="chips"></div>
       <div class="small">Цвет</div>
@@ -185,6 +186,7 @@ async function loadProductsFromSupabase(){
     products=rows.map(p=>({
       sku:p.sku,
       name:p.name,
+      description:p.description||'',
       price:Number(p.sale_price||0),
       discount:Number(p.discount_percent||0),
       sizes:Array.isArray(p.sizes)?p.sizes:[],
@@ -206,6 +208,10 @@ async function loadProductsFromSupabase(){
   }
 }
 
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
 function renderProducts(){
   const q=(document.getElementById('search').value||'').toLowerCase();
   const list=products.filter(p=>(p.name+' '+p.sku).toLowerCase().includes(q));
@@ -215,6 +221,7 @@ function renderProducts(){
     <div class="card-body">
       <div class="sku">${p.sku}</div>
       <div class="name">${p.name}</div>
+      ${p.description?.trim()?`<div class="card-description">${escapeHtml(p.description.trim())}</div>`:''}
       <div class="meta">Размеры: ${p.sizes.join(' / ')}<br>MOQ: ${p.moq}</div>
       
 ${p.discount>0
@@ -245,6 +252,8 @@ function openProduct(sku){
    <span style="display:block;font-size:16px;font-weight:700;color:#b42318">-${current.discount}%</span>
    <span style="display:block;font-size:24px;font-weight:800">${money(Math.round(current.price*(1-current.discount/100)))}</span>`
 : money(current.price); detailMoq.textContent='MOQ: '+current.moq;
+  detailDescription.textContent=current.description?.trim()||'';
+  detailDescription.hidden=!detailDescription.textContent;
   renderVariantChips();
   productModal.style.display='block';
 }
@@ -412,7 +421,7 @@ loadProductsFromSupabase();
  
   <a href="https://wa.me/37433200019" target="_blank"
      style="background:#25D366;color:white;text-decoration:none;padding:12px 16px;border-radius:12px;font-weight:700;">
-    ☎ WhatsApp
+    <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.04 2a9.9 9.9 0 0 0-8.5 15.01L2 22l5.14-1.49A9.99 9.99 0 1 0 12.04 2Zm0 18.16a8.15 8.15 0 0 1-4.17-1.14l-.3-.18-3.05.88.91-2.97-.2-.31a8.15 8.15 0 1 1 6.81 3.72Zm4.48-6.1c-.24-.12-1.45-.72-1.67-.8-.22-.08-.38-.12-.54.12-.16.24-.62.8-.76.96-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.42-1.34-1.66-.14-.24-.02-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.41h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.1.16 1.52.1.46-.07 1.45-.6 1.65-1.17.2-.57.2-1.06.14-1.17-.06-.1-.22-.16-.46-.28Z"/></svg> WhatsApp
   </a>
  
   <a href="tel:+37433200019"
@@ -422,7 +431,7 @@ loadProductsFromSupabase();
  
   <a href="https://instagram.com/" target="_blank"
      style="background:#8134AF;color:white;text-decoration:none;padding:12px 16px;border-radius:12px;font-weight:700;">
-    ◎ Instagram
+    <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.6" cy="6.5" r="1.2" fill="currentColor"/></svg> Instagram
   </a>
  
 </div>
@@ -743,6 +752,46 @@ a[href*="instagram.com"]:not([style]) {
 .modal-content p {
   margin: 4px 0 !important;
 }
+</style>
+<style>
+/* Product modal and optional descriptions */
+#productModal .sheet-head {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+}
+#productModal .sheet-head b {
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 600;
+}
+#productModal .sheet-head .close {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  font-size: 17px !important;
+  line-height: 24px !important;
+  cursor: pointer;
+}
+.card-description {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 5px 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: pre-line;
+}
+.product-description {margin: 10px 0 14px;line-height: 1.5;white-space: pre-line;overflow-wrap: anywhere;color:#514b45;font-size:14px}
+.product-description[hidden] {display:none}
+.contact-buttons .contact-icon {width:19px;height:19px;flex:none;display:inline-block;vertical-align:middle;margin-right:6px}
 </style>
 </body></html>
  

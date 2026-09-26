@@ -4,6 +4,30 @@
   const SUPABASE_URL="https://euuqxtpumhecvbsainms.supabase.co";
   const SUPABASE_KEY="sb_publishable_ilqXAt3lZkQ3wOHXr2LKGA_4sRHer9u";
 
+  function applyCompactStyles(){
+    if(document.getElementById("simaneli-compact-cards")) return;
+    const style=document.createElement("style");
+    style.id="simaneli-compact-cards";
+    style.textContent=`
+      .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px 12px 100px}
+      .card{border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.07)}
+      .card img{display:block;width:100%;height:220px;object-fit:contain;background:#f7f5f1}
+      .card-body{padding:8px}
+      .card .name{margin:4px 0;line-height:1.2}
+      .card .meta{line-height:1.3}
+      .card .price{font-size:18px;margin-top:5px}
+      #productModal .detail-img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;background:#f7f5f1}
+      @media(max-width:650px){
+        .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:6px 6px 90px}
+        .card img{height:170px}
+        .card-body{padding:6px}
+        .card .price{font-size:16px}
+        #productModal .detail-img{height:auto !important;max-height:60vh !important;object-fit:contain !important}
+      }
+    `;
+    document.body.append(style);
+  }
+
   function parseImages(v){
     if(!v) return [];
     if(Array.isArray(v)) return v.filter(Boolean).slice(0,10);
@@ -61,7 +85,7 @@
           const holder=[...card.children].find(x=>x && x.nodeType===1);
           if(holder){
             img=document.createElement("img");
-            img.style.cssText="width:100%;height:300px;object-fit:cover;display:block;";
+            img.style.cssText="width:100%;object-fit:contain;display:block;";
             holder.prepend(img);
           }
         }
@@ -154,6 +178,7 @@
   }
 
   async function runFixes(){
+    applyCompactStyles();
     await fixHomeCardImages();
     await attachDetailGallery();
   }
